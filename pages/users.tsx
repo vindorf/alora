@@ -1,13 +1,18 @@
+import useCurrentUser from "@/hooks/useCurrentUser";
 import useUsers from "@/hooks/useUsers";
+import User from "@/models/user.model";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
+
 const Users = () => {
+  const currentUser = useCurrentUser() as typeof User | null;
   const [data, error, isLoading] = useUsers();
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [currentUser, setCurrentUser] = useState(null);
+  
+  
 
   useEffect(() => {
     if (status != "authenticated") {
@@ -15,18 +20,7 @@ const Users = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const currentUser = async () => {
-      if (!session) return null;
-      if (data.length > 0) {
-        const user = await data.find(
-          (e: any) => e.email === session.user.email
-        );
-        setCurrentUser(user.name);
-      }
-    };
-    currentUser();
-  }, [data]);
+
 
   if (error) return <div>Error fetching Data</div>;
   if (isLoading) return <div>...Loading</div>;
@@ -40,12 +34,12 @@ const Users = () => {
   return (
     <div className="flex flex-col items-center mt-24 gap-4">
       <b>Users</b>
-      <div>Current User: {currentUser} </div>
+      <div>Current User:  {currentUser != null  && currentUser?.name}</div>
 
       {data.length > 0 &&
         data.map((us: Props) => (
-          <div className="font-thin border p-3">
-            <p key={us.name} className="text-xs">
+          <div key={us.name} className="font-thin border p-3">
+            <p  className="text-xs">
               Id: {us._id}
             </p>
             <div
